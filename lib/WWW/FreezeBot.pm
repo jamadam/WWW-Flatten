@@ -7,12 +7,12 @@ use Mojo::Base 'Mojo::Crawler';
 use Mojo::Crawler;
 our $VERSION = '0.01';
 
-has bot => sub { Mojo::Crawler->new };
 has urls => sub { {} };
 has filenames => sub { {} };
 has 'basedir';
 has is_target => sub { sub { 1 } };
 has _resource_num => 0;
+has 'normalize';
 
 sub init {
     my ($self) = @_;
@@ -52,6 +52,10 @@ sub init {
         my $uri = $queue->resolved_uri;
         
         return unless ($self->is_target->($uri));
+        
+        if (my $cb = $self->normalize) {
+            $queue->resolved_uri($cb->($uri));
+        }
         
         if (!$self->filenames->{$uri}) {
             $self->filenames->{$uri} =
