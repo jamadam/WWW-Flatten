@@ -13,14 +13,12 @@ has filenames => sub { {} };
 has 'basedir';
 has is_target => sub { sub { 1 } };
 has _resource_num => 0;
-has 'initial_urls' => sub { {} };
 
-sub crawl {
-    my ($self, $urls) = @_;
+sub init {
+    my ($self) = @_;
     
     for (keys %{$self->filenames}) {
         $self->enqueue($_);
-        $self->initial_urls->{$self->filenames->{$_}} = undef;
     }
     
     $self->on(res => sub {
@@ -70,7 +68,7 @@ sub crawl {
         $self->enqueue($queue);
     });
     
-    $self->SUPER::crawl;
+    $self->SUPER::init;
 }
 
 sub get_href {
