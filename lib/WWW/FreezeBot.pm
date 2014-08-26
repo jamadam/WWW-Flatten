@@ -209,7 +209,7 @@ WWW::FreezeBot - Freeze a web pages deeply and make it portable
 
 =head1 DESCRIPTION
 
-Freezebot is a web crawling tool for freezing pages into standalone.
+WWW::Freezebot is a web crawling tool for freezing pages into standalone.
 
 This software is considered to be alpha quality and isn't recommended for regular usage.
 

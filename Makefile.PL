@@ -3,10 +3,10 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 my %params = (
-    NAME          => 'Freezebot',
+    NAME          => 'WWW-Freezebot',
     AUTHOR        => 'sugama <sugama@jamadam.com>',
-    VERSION_FROM  => 'lib/Freezebot.pm',
-    ABSTRACT_FROM => 'lib/Freezebot.pm',
+    VERSION_FROM  => 'lib/WWW/Freezebot.pm',
+    ABSTRACT_FROM => 'lib/WWW/Freezebot.pm',
     LICENSE       => 'perl',
     PREREQ_PM     => {
         'Mojolicious' => '5.31',
