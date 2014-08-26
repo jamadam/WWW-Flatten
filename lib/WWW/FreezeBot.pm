@@ -160,11 +160,60 @@ sub save {
 
 =head1 NAME
 
-Mojo::Crawler - 
+WWW::FreezeBot - Freeze a web pages deeply and make it portable
 
 =head1 SYNOPSIS
 
+    use strict;
+    use warnings;
+    use utf8;
+    use 5.010;
+    use Mojo::URL;
+    use WWW::FreezeBot;
+    
+    my $basedir = './github/';
+    mkdir($basedir);
+    
+    my $ext_regex = qr{\.(css|png|gif|jpeg|jpg|pdf|js|json)$}i;
+    
+    my $bot = WWW::FreezeBot->new(
+        basedir => $basedir,
+        max_conn => 1,
+        wait_per_host => 3,
+        peeping_port => 3000,
+        depth => 3,
+        filenames => {
+            'https://github.com' => 'index.html',
+        },
+        is_target => sub {
+            my $uri = Mojo::URL->new(shift);
+            
+            if ($uri =~ $ext_regex) {
+                return 1;
+            }
+            
+            if ($uri->host eq 'assets-cdn.github.com') {
+                return 1;
+            }
+            
+            return 0;
+        },
+        normalize => sub {
+            my $uri = Mojo::URL->new(shift);
+            
+            return $uri;
+        }
+    );
+    
+    $bot->crawl;
+
 =head1 DESCRIPTION
+
+Freezebot is a web crawling tool for freezing pages into standalone.
+
+This software is considered to be alpha quality and isn't recommended for regular usage.
+
+=head1 ATTRIBUTES
 
 =head1 METHODS
 
