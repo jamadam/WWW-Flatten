@@ -24,7 +24,7 @@ sub init {
     $self->on(res => sub {
         my ($self, $discover, $queue, $res) = @_;
         my $uri = $queue->resolved_uri;
-        say $uri;
+        say sprintf('created: %s => %s ', $self->filenames->{$uri}, $uri);
         
         my $cont = $res->body;
         
