@@ -54,7 +54,8 @@ sub init {
         return unless ($self->is_target->($uri));
         
         if (my $cb = $self->normalize) {
-            $queue->resolved_uri($cb->($uri));
+            $uri = $cb->($uri);
+            $queue->resolved_uri($uri);
         }
         
         if (!$self->filenames->{$uri}) {
