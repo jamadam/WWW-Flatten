@@ -4,6 +4,7 @@ use warnings;
 use utf8;
 use 5.010;
 use Mojo::Base 'Mojo::Crawler';
+use Mojo::Util qw(md5_sum);
 use Mojo::Crawler;
 our $VERSION = '0.01';
 
@@ -11,8 +12,29 @@ has urls => sub { {} };
 has filenames => sub { {} };
 has 'basedir';
 has is_target => sub { sub { 1 } };
-has _resource_num => 0;
 has 'normalize';
+has asset_name => sub { asset_number_generator(6) };
+
+sub asset_number_generator {
+    my $digit = (shift || 6);
+    my $num = 0;
+    return sub {
+        return sprintf("%0${digit}d", $num++);
+    };
+}
+
+sub asset_hash_generator {
+    my $len = (shift || 6);
+    my %uniq;
+    return sub {
+        my $md5 = md5_sum(shift);
+        my $len = $len;
+        my $key;
+        do { $key = substr($md5, 0, $len++) } while (exists $uniq{$key});
+        $uniq{$key} = undef;
+        return $key;
+    };
+}
 
 sub init {
     my ($self) = @_;
@@ -59,8 +81,8 @@ sub init {
         }
         
         if (!$self->filenames->{$uri}) {
-            $self->filenames->{$uri} =
-                $self->resource_num. '.'. (($uri =~ qr{\.(\w+)$})[0] || 'html');
+            $self->filenames->{$uri} = $self->asset_name->($uri).
+                                    '.'. (($uri =~ qr{\.(\w+)$})[0] || 'html');
         }
         
         $enqueue->();
@@ -130,10 +152,6 @@ sub save {
     open(my $OUT, utf8::is_utf8($content) ? '>:utf8' : '>', $fullpath);
     print $OUT $content;
     close($OUT);
-}
-
-sub resource_num {
-    return sprintf("%06d", shift->{_resource_num}++);
 }
 
 1;
