@@ -76,8 +76,7 @@ sub init {
         return unless ($self->is_target->($uri));
         
         if (my $cb = $self->normalize) {
-            $uri = $cb->($uri);
-            $queue->resolved_uri($uri);
+            $queue->resolved_uri($uri = $cb->($uri));
         }
         
         if (!$self->filenames->{$uri}) {
@@ -102,6 +101,9 @@ sub get_href {
     my ($self, $base, $uri) = @_;
     my $fragment = ($uri =~ qr{(#.+)})[0] || '';
     my $abs = Mojo::Crawler::resolve_href($base, $uri);
+    if (my $cb = $self->normalize) {
+        $abs = $cb->($abs);
+    }
     my $file = $self->filenames->{$abs};
     return './'. $file. $fragment if ($file);
     return $abs. $fragment;
