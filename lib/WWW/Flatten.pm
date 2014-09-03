@@ -3,9 +3,8 @@ use strict;
 use warnings;
 use utf8;
 use 5.010;
-use Mojo::Base 'Mojo::Crawler';
+use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
-use Mojo::Crawler;
 our $VERSION = '0.01';
 
 has urls => sub { {} };
@@ -100,7 +99,7 @@ sub init {
 sub get_href {
     my ($self, $base, $uri) = @_;
     my $fragment = ($uri =~ qr{(#.+)})[0] || '';
-    my $abs = Mojo::Crawler::resolve_href($base, $uri);
+    my $abs = WWW::Crawler::Mojo::resolve_href($base, $uri);
     if (my $cb = $self->normalize) {
         $abs = $cb->($abs);
     }

@@ -10,6 +10,7 @@ my %params = (
     LICENSE       => 'perl',
     PREREQ_PM     => {
         'Mojolicious' => '5.31',
+        'WWW::Crawler::Mojo' => '0.01',
     },
     BUILD_REQUIRES => {
         'Test::More'            => '0.98',
