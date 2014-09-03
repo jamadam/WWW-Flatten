@@ -1,15 +1,15 @@
-WWW::Freezebot
+WWW::Flatten
 ---------------
 
-WWW::Freezebot is a web crawling tool for freezing pages into standalone.
+WWW::Flatten is a web crawling tool for freezing pages into standalone.
 
 __This software is considered to be alpha quality and isn't recommended for
 regular usage.__
 
 ## REPOSITORY
 
-[https://github.com/jamadam/WWW-Freezebot]
-[https://github.com/jamadam/WWW-Freezebot]:https://github.com/jamadam/WWW-Freezebot
+[https://github.com/jamadam/WWW-Flatten]
+[https://github.com/jamadam/WWW-Flatten]:https://github.com/jamadam/WWW-Flatten
 
 ## COPYRIGHT AND LICENSE
 

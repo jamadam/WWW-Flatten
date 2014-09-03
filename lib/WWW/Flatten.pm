@@ -1,4 +1,4 @@
-package WWW::FreezeBot;
+package WWW::Flatten;
 use strict;
 use warnings;
 use utf8;
@@ -60,10 +60,10 @@ sub init {
                 $base = resolve_href($base, $base_tag->attr('href'));
             }
             $cont = $res->dom;
-            $self->freeze_html($cont, $base);
+            $self->flatten_html($cont, $base);
             $cont = $cont->to_string;
         } elsif ($type && $type =~ qr{text/css}) {
-            $cont = $self->freeze_css($cont, $base);
+            $cont = $self->flatten_css($cont, $base);
         }
         
         $self->save($queue->resolved_uri, $cont);
@@ -109,7 +109,7 @@ sub get_href {
     return $abs. $fragment;
 }
 
-sub freeze_html {
+sub flatten_html {
     my ($self, $dom, $base) = @_;
     
     $dom->find('form, script, link, a, img, area, embed, frame, iframe, input,
@@ -136,11 +136,11 @@ sub freeze_html {
     $dom->find('style')->each(sub {
         my $dom = shift;
         my $cont = $dom->content;
-        $dom->content($self->freeze_css($cont, $base));
+        $dom->content($self->flatten_css($cont, $base));
     });
 }
 
-sub freeze_css {
+sub flatten_css {
     my ($self, $cont, $base) = @_;
     $cont =~ s{url\(['"]?(.+?)['"]?\)}{
         'url('. $self->get_href($base, $1). ')';
@@ -160,7 +160,7 @@ sub save {
 
 =head1 NAME
 
-WWW::FreezeBot - Freeze a web pages deeply and make it portable
+WWW::Flatten - Flatten a web pages deeply and make it portable
 
 =head1 SYNOPSIS
 
@@ -169,14 +169,14 @@ WWW::FreezeBot - Freeze a web pages deeply and make it portable
     use utf8;
     use 5.010;
     use Mojo::URL;
-    use WWW::FreezeBot;
+    use WWW::Flatten;
     
     my $basedir = './github/';
     mkdir($basedir);
     
     my $ext_regex = qr{\.(css|png|gif|jpeg|jpg|pdf|js|json)$}i;
     
-    my $bot = WWW::FreezeBot->new(
+    my $bot = WWW::Flatten->new(
         basedir => $basedir,
         max_conn => 1,
         wait_per_host => 3,
@@ -209,7 +209,7 @@ WWW::FreezeBot - Freeze a web pages deeply and make it portable
 
 =head1 DESCRIPTION
 
-WWW::Freezebot is a web crawling tool for freezing pages into standalone.
+WWW::Flatten is a web crawling tool for freezing pages into standalone.
 
 This software is considered to be alpha quality and isn't recommended for regular usage.
 
