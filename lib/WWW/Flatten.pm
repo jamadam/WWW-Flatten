@@ -81,7 +81,7 @@ sub init {
         
         if (!$self->filenames->{$uri}) {
             $self->filenames->{$uri} = $self->asset_name->($uri).
-                                    '.'. (($uri =~ qr{\.(\w+)$})[0] || 'html');
+                            '.'. (($uri->path =~ qr{\.(\w+)$})[0] || 'html');
         }
         
         $enqueue->();
