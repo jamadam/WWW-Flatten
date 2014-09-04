@@ -44,16 +44,15 @@ sub init {
     
     $self->on(res => sub {
         my ($self, $discover, $queue, $res) = @_;
-        my $uri = $queue->resolved_uri;
-        
-        my $cont = $res->body;
         
         $discover->();
         
-        my $base = $queue->resolved_uri;
+        my $uri = $queue->resolved_uri;
+        my $cont = $res->body;
         my $type = $res->headers->content_type;
         
         if ($type && $type =~ qr{text/(html|xml)}) {
+            my $base = $uri;
             if (my $base_tag = $res->dom->at('base')) {
                 $base = resolve_href($base, $base_tag->attr('href'));
             }
@@ -61,7 +60,7 @@ sub init {
             $self->flatten_html($cont, $base);
             $cont = $cont->to_string;
         } elsif ($type && $type =~ qr{text/css}) {
-            $cont = $self->flatten_css($cont, $base);
+            $cont = $self->flatten_css($cont, $uri);
         }
         
         $self->save($queue->resolved_uri, $cont);
