@@ -46,7 +46,6 @@ sub init {
     $self->on(res => sub {
         my ($self, $discover, $queue, $res) = @_;
         my $uri = $queue->resolved_uri;
-        say sprintf('created: %s => %s ', $self->filenames->{$uri}, $uri);
         
         my $cont = $res->body;
         
@@ -67,13 +66,15 @@ sub init {
         }
         
         $self->save($queue->resolved_uri, $cont);
+        say sprintf('created: %s => %s ', $self->filenames->{$uri}, $uri);
     });
     
     $self->on(refer => sub {
-        my ($self, $enqueue, $queue, $parent_queue, $context) = @_;
-        my $uri = $queue->resolved_uri;
+        my ($self, $enqueue, $queue, $context) = @_;
         
-        return unless ($self->is_target->($uri));
+        return unless ($self->is_target->($queue));
+        
+        my $uri = $queue->resolved_uri;
         
         if (my $cb = $self->normalize) {
             $queue->resolved_uri($uri = $cb->($uri));
@@ -186,7 +187,7 @@ WWW::FreezeBot - Freeze a web pages deeply and make it portable
             'https://github.com' => 'index.html',
         },
         is_target => sub {
-            my $uri = Mojo::URL->new(shift);
+            my $uri = Mojo::URL->new(shift->resolved_uri);
             
             if ($uri =~ $ext_regex) {
                 return 1;
