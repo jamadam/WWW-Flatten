@@ -108,25 +108,25 @@ sub get_href {
     return $abs. $fragment;
 }
 
+my %tag_attributes = %WWW::Crawler::Mojo::tag_attributes;
+
 sub flatten_html {
     my ($self, $dom, $base) = @_;
     
-    $dom->find('form, script, link, a, img, area, embed, frame, iframe, input,
-                                    meta[http\-equiv=Refresh]')->each(sub {
+    $dom->find(join(',', keys %tag_attributes))->each(sub {
         my $dom = shift;
-        
-        for my $name ('action','href','src','content') {
-            if ($dom->{$name}) {
-                if ($name eq 'content' && ($dom->{content} =~ qr{URL=(.+)}i)[0]) {
-                    my $abs = $self->get_href($base, $1);
-                    $dom->{content} =~ s{URL=(.+)}{
-                        'URL='. $abs;
-                    }e;
-                } else {
-                    $dom->{$name} = $self->get_href($base, $dom->{$name});
-                }
-                last;
-            }
+        for (@{$tag_attributes{$dom->type}}) {
+            $dom->{$_} = $self->get_href($base, $dom->{$_}) if ($dom->{$_});
+        }
+    });
+    
+    $dom->find('meta[http\-equiv=Refresh]')->each(sub {
+        my $dom = shift;
+        if (my $href = $dom->{content} && ($dom->{content} =~ qr{URL=(.+)}i)[0]) {
+            my $abs = $self->get_href($base, $1);
+            $dom->{content} =~ s{URL=(.+)}{
+                'URL='. $abs;
+            }e;
         }
     });
     
