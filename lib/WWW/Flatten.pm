@@ -63,14 +63,17 @@ sub init {
             $cont = $self->flatten_css($cont, $uri);
         }
         
-        $self->save($queue->resolved_uri, $cont);
-        say sprintf('created: %s => %s ', $self->filenames->{$uri}, $uri);
+        my $original = $queue->original_uri;
+        
+        $self->save($original, $cont);
+        say sprintf('created: %s => %s ',
+                                    $self->filenames->{$original}, $original);
     });
     
     $self->on(refer => sub {
         my ($self, $enqueue, $queue, $context) = @_;
         
-        return unless ($self->is_target->($queue));
+        return unless ($self->is_target->($queue, $context));
         
         my $uri = $queue->resolved_uri;
         
@@ -78,10 +81,7 @@ sub init {
             $queue->resolved_uri($uri = $cb->($uri));
         }
         
-        if (!$self->filenames->{$uri}) {
-            $self->filenames->{$uri} = $self->asset_name->($uri).
-                            '.'. (($uri->path =~ qr{\.(\w+)$})[0] || 'html');
-        }
+        $self->_regist_asset_name($uri);
         
         $enqueue->();
     });
@@ -153,6 +153,14 @@ sub save {
     open(my $OUT, utf8::is_utf8($content) ? '>:utf8' : '>', $fullpath);
     print $OUT $content;
     close($OUT);
+}
+
+sub _regist_asset_name {
+    my ($self, $uri) = @_;
+    if (!$self->filenames->{$uri}) {
+        $self->filenames->{$uri} = $self->asset_name->($uri).
+                            '.'. (($uri->path =~ qr{\.(\w+)$})[0] || 'html');
+    }
 }
 
 1;
