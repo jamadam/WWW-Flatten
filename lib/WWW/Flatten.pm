@@ -13,6 +13,8 @@ has 'basedir';
 has is_target => sub { sub { 1 } };
 has 'normalize';
 has asset_name => sub { asset_number_generator(6) };
+has retrys => sub { {} };
+has max_retry => 3;
 
 sub asset_number_generator {
     my $digit = (shift || 6);
@@ -89,8 +91,11 @@ sub init {
     $self->on(error => sub {
         my ($self, $msg, $queue) = @_;
         say $msg;
-        say "Re-scheduled";
-        $self->enqueue($queue);
+        my $md5 = md5_sum($queue->resolved_uri->to_string);
+        if (++$self->retrys->{$md5} < $self->max_retry) {
+            $self->requeue($queue);
+            say "Re-scheduled";
+        }
     });
     
     $self->SUPER::init;
