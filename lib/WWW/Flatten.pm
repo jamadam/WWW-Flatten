@@ -5,6 +5,7 @@ use utf8;
 use 5.010;
 use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
+use Mojolicious::Types;
 our $VERSION = '0.01';
 
 has urls => sub { {} };
@@ -15,6 +16,14 @@ has 'normalize';
 has asset_name => sub { asset_number_generator(6) };
 has retrys => sub { {} };
 has max_retry => 3;
+has types => sub {
+    my $types;
+    my %cat = %{Mojolicious::Types->new->types};
+    while (my ($key, $val) = each %cat) {
+        $types->{$_} = $key for (map { s/\;.*$//; lc $_ } @$val);
+    }
+    return $types;
+};
 
 sub asset_number_generator {
     my $digit = (shift || 6);
@@ -163,8 +172,13 @@ sub save {
 sub _regist_asset_name {
     my ($self, $uri) = @_;
     if (!$self->filenames->{$uri}) {
-        $self->filenames->{$uri} = $self->asset_name->($uri).
-                            '.'. (($uri->path =~ qr{\.(\w+)$})[0] || 'html');
+        $self->filenames->{$uri} = $self->asset_name->($uri);
+        my $ext = ($uri->path =~ qr{\.(\w+)$})[0] || do {
+            my $got = $self->ua->head($uri)->res->headers->content_type || '';
+            $got =~ s/\;.*$//;
+            $self->types->{lc $got};
+        };
+        $self->filenames->{$uri} .= ".$ext" if ($ext);
     }
 }
 
