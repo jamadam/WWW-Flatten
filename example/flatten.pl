@@ -7,7 +7,7 @@ use Mojo::URL;
 use WWW::Flatten;
 
 my $basedir = './output/';
--d $basedir || mkdir($basedir) || 'Current directory is not writable';
+-d $basedir || mkdir($basedir) || die 'Current directory is not writable';
 
 my $url = $ARGV[0];
 
