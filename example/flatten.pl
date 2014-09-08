@@ -25,7 +25,7 @@ my $bot = WWW::Flatten->new(
         return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
     },
     normalize => sub {
-        my $uri = Mojo::URL->new(shift);
+        my $uri = shift;
         
         return $uri;
     }
