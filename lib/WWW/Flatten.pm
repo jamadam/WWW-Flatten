@@ -54,11 +54,11 @@ sub init {
     }
     
     $self->on(res => sub {
-        my ($self, $discover, $queue, $res) = @_;
+        my ($self, $discover, $job, $res) = @_;
         
         $discover->();
         
-        my $uri = $queue->resolved_uri;
+        my $uri = $job->resolved_uri;
         my $cont = $res->body;
         my $type = $res->headers->content_type;
         
@@ -74,7 +74,7 @@ sub init {
             $cont = $self->flatten_css($cont, $uri);
         }
         
-        my $original = $queue->original_uri;
+        my $original = $job->original_uri;
         
         $self->save($original, $cont);
         say sprintf('created: %s => %s ',
@@ -82,14 +82,14 @@ sub init {
     });
     
     $self->on(refer => sub {
-        my ($self, $enqueue, $queue, $context) = @_;
+        my ($self, $enqueue, $job, $context) = @_;
         
-        return unless ($self->is_target->($queue, $context));
+        return unless ($self->is_target->($job, $context));
         
-        my $uri = $queue->resolved_uri;
+        my $uri = $job->resolved_uri;
         
         if (my $cb = $self->normalize) {
-            $queue->resolved_uri($uri = $cb->($uri));
+            $job->resolved_uri($uri = $cb->($uri));
         }
         
         $self->_regist_asset_name($uri);
@@ -98,11 +98,11 @@ sub init {
     });
     
     $self->on(error => sub {
-        my ($self, $msg, $queue) = @_;
+        my ($self, $msg, $job) = @_;
         say $msg;
-        my $md5 = md5_sum($queue->resolved_uri->to_string);
+        my $md5 = md5_sum($job->resolved_uri->to_string);
         if (++$self->retrys->{$md5} < $self->max_retry) {
-            $self->requeue($queue);
+            $self->requeue($job);
             say "Re-scheduled";
         }
     });

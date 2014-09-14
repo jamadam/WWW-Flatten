@@ -6,20 +6,20 @@ use 5.10.0;
 
 my $bot = WWW::Crawler::Mojo->new;
 $bot->on(res => sub {
-    my ($bot, $discover, $queue, $res) = @_;
+    my ($bot, $discover, $job, $res) = @_;
     say sprintf('fetching %s resulted status %s',
-                                    $queue->resolved_uri, $res->code);
+                                    $job->resolved_uri, $res->code);
     $discover->();
 });
 $bot->on(refer => sub {
-    my ($bot, $enqueue, $queue, $parent_queue, $context) = @_;
+    my ($bot, $enqueue, $job, $context) = @_;
     $enqueue->();
 });
 $bot->on(error => sub {
-    my ($msg, $queue) = @_;
+    my ($msg, $job) = @_;
     say $msg;
     say "Re-scheduled";
-    $bot->enqueue($queue);
+    $bot->enqueue($job);
 });
 $bot->enqueue('http://example.com/');
 $bot->crawl;

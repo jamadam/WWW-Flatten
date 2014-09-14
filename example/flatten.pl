@@ -21,7 +21,7 @@ my $bot = WWW::Flatten->new(
         $url => 'index.html',
     },
     is_target => sub {
-        my ($queue, $context) = @_;
+        my ($job, $context) = @_;
         return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
     },
     normalize => sub {
