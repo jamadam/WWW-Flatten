@@ -16,7 +16,8 @@ I believe this works better than wget or "Saving as, complete" in browsers.
 
 ## USAGE
 
-wwwflatten command is available.
+wwwflatten command is available. You can brows out directory localy or upload it
+to web servers as is.
 
     $ wwwflatten --basedir ./out/ http://github.com/
 
@@ -28,6 +29,8 @@ Or the following example generates mojolicious app at once.
 Then you can see the archive in browser with port 3000
 
     http://127.0.0.1:3000/
+
+The app is also portable so it can be deployed to app servers.
 
 ## CLASS USAGE
 
