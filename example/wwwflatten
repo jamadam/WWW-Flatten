@@ -8,7 +8,6 @@ use WWW::Flatten;
 use Getopt::Long 'GetOptionsFromArray';
 use Pod::Usage;
 use feature();
-use Mojolicious::Command::generate::lite_app;
 
 my %options;
 my $bot = WWW::Flatten->new(basedir => './output/');
@@ -58,7 +57,7 @@ if ($options{'mojo-app'}) {
     my $app_base = $bot->basedir;
     $bot->basedir($bot->basedir. '/public/');
     -d $bot->basedir || mkdir($bot->basedir) || die 'basedir is not writable';
-    Mojolicious::Command::generate::lite_app->new->run($app_base. 'mojo.pl');
+    gen_mojo_app($app_base. 'mojo.pl');
 }
 
 $bot->on(start => sub {
@@ -79,6 +78,17 @@ sub target_path {
     state $path = $start->path;
     return 1 if ($uri->ihost eq $ihost) && $uri->path =~ qr{^$path};
     return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
+}
+
+sub gen_mojo_app {
+    open(my $OUT, '>:utf8', shift);
+    print $OUT <<EOF;
+#!/usr/bin/env perl
+use Mojolicious::Lite;
+get '/' => sub { shift->redirect_to('/index.html') };
+app->start;
+EOF
+    close($OUT);
 }
 
 =head1 NAME
