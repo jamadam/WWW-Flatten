@@ -8,8 +8,8 @@ regular usage.__
 
 ## INSTALLATION AND USAGE
 
-$ cpanm https://github.com/jamadam/WWW-Flatten
-$ wwwflatten http://github.com/
+    $ cpanm https://github.com/jamadam/WWW-Flatten
+    $ wwwflatten http://github.com/
 
 ## CLASS USAGE
 
