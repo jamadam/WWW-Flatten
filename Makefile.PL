@@ -10,7 +10,7 @@ my %params = (
     LICENSE       => 'perl',
     PREREQ_PM     => {
         'Mojolicious' => '5.31',
-        'WWW::Crawler::Mojo' => '0.01',
+        'WWW::Crawler::Mojo' => '0.04',
     },
     BUILD_REQUIRES => {
         'Test::More'            => '0.98',
@@ -22,6 +22,7 @@ my %params = (
         },
     },
     test => {TESTS => 't/*.t t/*/*.t'},
+    EXE_FILES => ['example/wwwflatten'],
 );
 
 my $eumm = $ExtUtils::MakeMaker::VERSION;
