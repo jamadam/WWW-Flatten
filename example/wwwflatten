@@ -16,6 +16,12 @@ GetOptionsFromArray(\@ARGV, \%options,
     'basedir|b=s' => sub {
         $bot->basedir($_[1])
     },
+    'target-single|s' => sub {
+        $bot->is_target(\&target_single);
+    },
+    'target-path|p' => sub {
+        $bot->is_target(\&target_path);
+    },
     'depth|d=i' => sub {
         $bot->depth($_[1]); warn $_[1];
     },
@@ -42,16 +48,28 @@ GetOptionsFromArray(\@ARGV, \%options,
 
 -d $bot->basedir || mkdir($bot->basedir) || die 'basedir is not writable';
 
-$bot->filenames->{pop @ARGV} = 'index.html';
-$bot->is_target(sub {
-    my ($job, $context) = @_;
-    return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
-});
+my $start = Mojo::URL->new(pop @ARGV);
+$bot->filenames->{$start} = 'index.html';
+$bot->is_target(\&target_single) unless (!$bot->is_target);
 $bot->on(start => sub {
     shift->say_start;
 });
 
 $bot->crawl;
+
+sub target_single {
+    my ($job, $context) = @_;
+    return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
+}
+
+sub target_path {
+    my ($job, $context) = @_;
+    my $uri = $job->resolved_uri;
+    state $ihost = $start->ihost;
+    state $path = $start->path;
+    return 1 if ($uri->ihost eq $ihost) && $uri->path =~ qr{^$path};
+    return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
+}
 
 =head1 NAME
 
@@ -63,14 +81,16 @@ wwwflatten [options] <starting URL>
 
 =head1 OPTIONS
 
-    -b, --basedir   : output directory defalts to ./output
-    -d, --depth     : max depth to crawl defaults to 10
-    -r, --max_retry : max re-try in case server is in-responsible defaults to 3
-    -c, --max_conn  : max connection defaults to 1
+    -b, --basedir       : output directory defalts to ./output
+    -s, --target-single : set target uri to single page and assets
+    -p, --target-path   : set target uri under path and assets
+    -d, --depth         : max depth to crawl defaults to 10
+    -r, --max_retry     : max re-try in case server is in-responsible defaults to 3
+    -c, --max_conn      : max connection defaults to 1
     -ch, --max_conn_per_host : max connection per host defaults to 1
-    -ck, --cookie   : set cookie for every requests
-    -v, --version   : print the version of dancer being used
-    -h, --help      : print what you are currently reading
+    -ck, --cookie       : set cookie for every requests
+    -v, --version       : print the version of dancer being used
+    -h, --help          : print what you are currently reading
 
 =head1 DESCRIPTION
 
@@ -80,7 +100,9 @@ This crawling covers not only single page but also beyond the links.
 =head1 EXAMPLE
 
     wwwflatten http://github.com/
-    wwwflatten -d=2 -c=4 http://github.com/
+    wwwflatten --depth=2 -max-conn=4 http://example.com/
+    wwwflatten --target-single http://example.com/only-this-page.html
+    wwwflatten --target-path http://example.com/under-this-path/
 
 =head1 SEE ALSO
 
