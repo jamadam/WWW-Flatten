@@ -1,15 +1,33 @@
 WWW::Flatten
 ---------------
 
-WWW::Flatten is a web crawling tool for freezing pages into standalone.
-
 __This software is considered to be alpha quality and isn't recommended for
 regular usage.__
 
-## INSTALLATION AND USAGE
+WWW::Flatten is a web crawling tool for freezing pages into standalone.
+I believe this works better than wget or "Saving as, complete" in browsers.
+
+- Covers assets beyond CSSs.
+- Publish-ready name of files.
+
+## INSTALLATION
 
     $ cpanm https://github.com/jamadam/WWW-Flatten
-    $ wwwflatten http://github.com/
+
+## USAGE
+
+wwwflatten command is available.
+
+    $ wwwflatten --basedir ./out/ http://github.com/
+
+Or the following example generates mojolicious app at once.
+
+    $ wwwflatten --mojo-app --basedir ./out/ http://github.com/
+    $ ./out/myapp.pl daemon
+
+Then you can see the archive in browser with port 3000
+
+    http://127.0.0.1:3000/
 
 ## CLASS USAGE
 
