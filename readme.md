@@ -12,7 +12,7 @@ I believe this works better than wget or "Saving as, complete" in browsers.
 
 ## INSTALLATION
 
-    $ cpanm https://github.com/jamadam/WWW-Flatten
+    $ cpanm WWW::Flatten
 
 ## USAGE
 
@@ -32,15 +32,28 @@ Then you can see the archive in browser with port 3000
 
 The app is also portable so it can be deployed to app servers.
 
+See also [Command line API]
+
+[Command line API]:http://search.cpan.org/perldoc?wwwflatten
+
 ## CLASS USAGE
 
 This tool is powerd by a class based perl module included in the repository.
 With the module, you can easily make a custom ruling crawler for your demand.
 
+See also [WWW::Flatten] API
+
+[WWW::Flatten]:http://search.cpan.org/perldoc?WWW::Flatten
+
 ## REPOSITORY
 
 [https://github.com/jamadam/WWW-Flatten]
 [https://github.com/jamadam/WWW-Flatten]:https://github.com/jamadam/WWW-Flatten
+
+## SEE ALSO
+
+[https://github.com/jamadam/WWW-Crawler-Mojo]
+[https://github.com/jamadam/WWW-Crawler-Mojo]:https://github.com/jamadam/WWW-Crawler-Mojo
 
 ## COPYRIGHT AND LICENSE
 
