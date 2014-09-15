@@ -3,12 +3,11 @@ use strict;
 use warnings;
 use utf8;
 use 5.010;
-use Data::Dumper;
 use Mojo::URL;
 use WWW::Flatten;
 use Getopt::Long 'GetOptionsFromArray';
 use Pod::Usage;
-use Data::Dumper;
+use feature();
 
 my %options;
 my $bot = WWW::Flatten->new(basedir => './output/');
