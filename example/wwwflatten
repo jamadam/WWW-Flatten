@@ -26,13 +26,13 @@ GetOptionsFromArray(\@ARGV, \%options,
     'depth|d=i' => sub {
         $bot->depth($_[1]); warn $_[1];
     },
-    'max_retry|r=i' => sub {
+    'max-retry|r=i' => sub {
         $bot->max_retry($_[1])
     },
-    'max_conn|c=i' => sub {
+    'max-conn|c=i' => sub {
         $bot->max_conn_per_host($_[1])
     },
-    'max_conn_per_host|ch=i' => sub {
+    'max-conn-per-host|ch=i' => sub {
         $bot->max_conn_per_host($_[1])
     },
     'mojo-app|ma',
@@ -95,9 +95,9 @@ wwwflatten [options] <starting URL>
     -s, --target-single : set target uri to single page and assets
     -p, --target-path   : set target uri under path and assets
     -d, --depth         : max depth to crawl defaults to 10
-    -r, --max_retry     : max re-try in case server is in-responsible defaults to 3
-    -c, --max_conn      : max connection defaults to 1
-    -ch, --max_conn_per_host : max connection per host defaults to 1
+    -r, --max-retry     : max re-try in case server is in-responsible defaults to 3
+    -c, --max-conn      : max connection defaults to 1
+    -ch, --max-conn-per-host : max connection per host defaults to 1
     -ma, --mojo-app     : output as a mojolicious application
     -ck, --cookie       : set cookie for every requests
     -v, --version       : print the version of dancer being used
