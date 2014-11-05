@@ -144,7 +144,7 @@ sub flatten_html {
         }
     });
     
-    $dom->find('base')->remove();
+    $dom->find('base')->each(sub {shift->remove});
     
     $dom->find('style')->each(sub {
         my $dom = shift;
