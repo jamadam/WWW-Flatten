@@ -7,7 +7,7 @@ use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
 use Mojolicious::Types;
 use Encode;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 has urls => sub { {} };
 has filenames => sub { {} };

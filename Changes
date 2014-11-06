@@ -1,5 +1,7 @@
 Revision history for WWW-Flatten
 
+0.03 2014/11/06
+
 0.02 2014/11/06
   - Fixed that charater entity referenes in HTML have caused character breakage.
 
