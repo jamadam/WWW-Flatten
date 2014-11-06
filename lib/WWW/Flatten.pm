@@ -6,6 +6,7 @@ use 5.010;
 use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
 use Mojolicious::Types;
+use Encode;
 our $VERSION = '0.02';
 
 has urls => sub { {} };
@@ -59,24 +60,29 @@ sub init {
         $discover->();
         
         my $uri = $job->resolved_uri;
-        my $cont = $res->body;
         my $type = $res->headers->content_type;
-        
-        if ($type && $type =~ qr{text/(html|xml)}) {
-            my $base = $uri;
-            if (my $base_tag = $res->dom->at('base')) {
-                $base = resolve_href($base, $base_tag->attr('href'));
-            }
-            $cont = $res->dom;
-            $self->flatten_html($cont, $base);
-            $cont = $cont->to_string;
-        } elsif ($type && $type =~ qr{text/css}) {
-            $cont = $self->flatten_css($cont, $uri);
-        }
-        
         my $original = $job->original_uri;
         
-        $self->save($original, $cont);
+        if ($type && $type =~ qr{text/(html|xml)}) {
+            my $encode = WWW::Crawler::Mojo::guess_encoding($res) || 'UTF-8';
+            my $cont = Mojo::DOM->new(Encode::decode($encode, $res->body));
+            my $base = $uri;
+            
+            if (my $base_tag = $cont->at('base')) {
+                $base = resolve_href($base, $base_tag->attr('href'));
+            }
+            
+            $self->flatten_html($cont, $base);
+            $cont = $cont->to_string;
+            $self->save($original, $cont, $encode);
+        } elsif ($type && $type =~ qr{text/css}) {
+            my $encode = WWW::Crawler::Mojo::guess_encoding($res) || 'UTF-8';
+            my $cont = $self->flatten_css($res->body, $uri);
+            $self->save($original, $cont, $encode);
+        } else {
+            $self->save($original, $res->body);
+        }
+        
         say sprintf('created: %s => %s ',
                                     $self->filenames->{$original}, $original);
     });
@@ -162,9 +168,10 @@ sub flatten_css {
 }
 
 sub save {
-    my ($self, $url, $content) = @_;
+    my ($self, $url, $content, $encode) = @_;
     my $fullpath = $self->basedir. $self->filenames->{$url};
-    open(my $OUT, utf8::is_utf8($content) ? '>:utf8' : '>', $fullpath);
+    $content = Encode::encode($encode, $content) if $encode;
+    open(my $OUT, '>', $fullpath);
     print $OUT $content;
     close($OUT);
 }
