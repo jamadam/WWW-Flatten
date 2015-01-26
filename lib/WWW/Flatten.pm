@@ -54,9 +54,9 @@ sub init {
     }
     
     $self->on(res => sub {
-        my ($self, $discover, $job, $res) = @_;
+        my ($self, $browse, $job, $res) = @_;
         
-        $discover->();
+        $browse->();
         
         my $uri = $job->resolved_uri;
         my $cont = $res->body;
