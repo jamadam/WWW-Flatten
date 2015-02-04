@@ -9,6 +9,7 @@ use Mojolicious::Types;
 use Encode;
 our $VERSION = '0.03';
 
+has depth => 10;
 has urls => sub { {} };
 has filenames => sub { {} };
 has 'basedir';
@@ -91,6 +92,7 @@ sub init {
         my ($self, $enqueue, $job, $context) = @_;
         
         return unless ($self->is_target->($job, $context));
+        return unless ($job->depth <= $self->depth);
         
         my $uri = $job->resolved_uri;
         
