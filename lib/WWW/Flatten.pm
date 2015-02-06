@@ -130,14 +130,12 @@ sub get_href {
     return $abs. $fragment;
 }
 
-my %tag_attributes = %WWW::Crawler::Mojo::tag_attributes;
-
 sub flatten_html {
     my ($self, $dom, $base) = @_;
     
-    $dom->find(join(',', keys %tag_attributes))->each(sub {
+    $dom->find(join(',', keys %{$self->element_handlers}))->each(sub {
         my $dom = shift;
-        for (@{$tag_attributes{$dom->type}}) {
+        for ('href', 'ping','src','data') {
             $dom->{$_} = $self->get_href($base, $dom->{$_}) if ($dom->{$_});
         }
     });

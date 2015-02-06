@@ -9,7 +9,7 @@ my %params = (
     ABSTRACT_FROM => 'lib/WWW/Flatten.pm',
     LICENSE       => 'perl',
     PREREQ_PM     => {
-        'WWW::Crawler::Mojo' => '0.09',
+        'WWW::Crawler::Mojo' => '0.10',
     },
     BUILD_REQUIRES => {
         'Test::More'            => '0.98',
