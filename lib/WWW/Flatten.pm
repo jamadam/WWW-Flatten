@@ -10,7 +10,6 @@ use Encode;
 our $VERSION = '0.03';
 
 has depth => 10;
-has urls => sub { {} };
 has filenames => sub { {} };
 has 'basedir';
 has is_target => sub { sub { 1 } };
@@ -56,9 +55,9 @@ sub init {
     }
     
     $self->on(res => sub {
-        my ($self, $browse, $job, $res) = @_;
+        my ($self, $scrape, $job, $res) = @_;
         
-        $browse->();
+        $scrape->();
         
         my $uri = $job->resolved_uri;
         my $type = $res->headers->content_type;
@@ -161,8 +160,10 @@ sub flatten_html {
 
 sub flatten_css {
     my ($self, $cont, $base) = @_;
-    $cont =~ s{url\(['"]?(.+?)['"]?\)}{
-        'url('. $self->get_href($base, $1). ')';
+    $cont =~ s{url\((.+?)\)}{
+        my $url = $1;
+        $url =~ s/^(['"])// && $url =~ s/$1$//;
+        'url('. $self->get_href($base, $url). ')';
     }eg;
     return $cont;
 }
@@ -201,27 +202,23 @@ WWW::Flatten - Flatten a web pages deeply and make it portable
     use warnings;
     use utf8;
     use 5.010;
-    use Mojo::URL;
     use WWW::Flatten;
     
     my $basedir = './github/';
     mkdir($basedir);
     
-    my $ext_regex = qr{\.(css|png|gif|jpeg|jpg|pdf|js|json)$}i;
-    
     my $bot = WWW::Flatten->new(
         basedir => $basedir,
         max_conn => 1,
-        wait_per_host => 3,
-        peeping_port => 3000,
+        max_conn_per_host => 1,
         depth => 3,
         filenames => {
             'https://github.com' => 'index.html',
         },
         is_target => sub {
-            my $uri = Mojo::URL->new(shift->resolved_uri);
+            my $uri = shift->resolved_uri;
             
-            if ($uri =~ $ext_regex) {
+            if ($uri =~ qr{\.(css|png|gif|jpeg|jpg|pdf|js|json)$}i) {
                 return 1;
             }
             
@@ -232,8 +229,8 @@ WWW::Flatten - Flatten a web pages deeply and make it portable
             return 0;
         },
         normalize => sub {
-            my $uri = Mojo::URL->new(shift);
-            
+            my $uri = shift;
+            ...
             return $uri;
         }
     );
