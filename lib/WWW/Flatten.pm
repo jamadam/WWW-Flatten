@@ -156,6 +156,13 @@ sub flatten_html {
         my $cont = $dom->content;
         $dom->content($self->flatten_css($cont, $base));
     });
+    
+    $dom->find('[style]')->each(sub {
+        my $dom = shift;
+        my $cont = $dom->{style};
+        $dom->{style} = $self->flatten_css($dom->{style}, $base);
+    });
+    return $dom
 }
 
 sub flatten_css {
@@ -164,7 +171,7 @@ sub flatten_css {
         my $url = $1;
         $url =~ s/^(['"])// && $url =~ s/$1$//;
         'url('. $self->get_href($base, $url). ')';
-    }eg;
+    }egi;
     return $cont;
 }
 
