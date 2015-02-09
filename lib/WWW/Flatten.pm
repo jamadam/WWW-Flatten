@@ -139,15 +139,13 @@ sub flatten_html {
         }
     });
     
-    $dom->find('meta[http\-equiv=Refresh]')->each(sub {
-        my $dom = shift;
-        if (my $href = $dom->{content} && ($dom->{content} =~ qr{URL=(.+)}i)[0]) {
-            my $abs = $self->get_href($base, $1);
-            $dom->{content} =~ s{URL=(.+)}{
-                'URL='. $abs;
-            }e;
+    $dom->find('meta[content]')->each(sub {
+        if ($_[0] =~ qr{http\-equiv="?Refresh"?}i && $_[0]->{content}) {
+            $_[0]->{content} =~
+                            s{URL=(.+)}{ 'URL='. $self->get_href($base, $1) }e;
         }
     });
+
     
     $dom->find('base')->each(sub {shift->remove});
     
