@@ -57,7 +57,24 @@ sub init {
     $self->on(res => sub {
         my ($self, $scrape, $job, $res) = @_;
         
-        $scrape->();
+        return unless $res->code == 200;
+        
+        $scrape->(sub {
+            my ($self, $enqueue, $job, $context) = @_;
+            
+            return unless ($self->is_target->($job, $context));
+            return unless ($job->depth <= $self->depth);
+            
+            my $uri = $job->resolved_uri;
+            
+            if (my $cb = $self->normalize) {
+                $job->resolved_uri($uri = $cb->($uri));
+            }
+            
+            $self->_regist_asset_name($uri);
+            
+            $enqueue->();
+        });
         
         my $uri = $job->resolved_uri;
         my $type = $res->headers->content_type;
@@ -85,23 +102,6 @@ sub init {
         
         say sprintf('created: %s => %s ',
                                     $self->filenames->{$original}, $original);
-    });
-    
-    $self->on(refer => sub {
-        my ($self, $enqueue, $job, $context) = @_;
-        
-        return unless ($self->is_target->($job, $context));
-        return unless ($job->depth <= $self->depth);
-        
-        my $uri = $job->resolved_uri;
-        
-        if (my $cb = $self->normalize) {
-            $job->resolved_uri($uri = $cb->($uri));
-        }
-        
-        $self->_regist_asset_name($uri);
-        
-        $enqueue->();
     });
     
     $self->on(error => sub {
