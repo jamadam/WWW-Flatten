@@ -8,7 +8,7 @@ use lib catdir(dirname(__FILE__), 'lib');
 use Test::More;
 use WWW::Flatten;
 
-use Test::More tests => 70;
+use Test::More tests => 2;
 
 my $flattener = WWW::Flatten->new;
 my $in;

@@ -5,6 +5,7 @@ use utf8;
 use 5.010;
 use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
+use WWW::Crawler::Mojo::ScraperUtil qw{resolve_href guess_encoding};
 use Mojolicious::Types;
 use Encode;
 our $VERSION = '0.03';
@@ -65,25 +66,25 @@ sub init {
             return unless ($self->is_target->($job, $context));
             return unless ($job->depth <= $self->depth);
             
-            my $uri = $job->resolved_uri;
+            my $url = $job->url;
             
             if (my $cb = $self->normalize) {
-                $job->resolved_uri($uri = $cb->($uri));
+                $job->url($url = $cb->($url));
             }
             
-            $self->_regist_asset_name($uri);
+            $self->_regist_asset_name($url);
             
             $enqueue->();
         });
         
-        my $uri = $job->resolved_uri;
+        my $url = $job->url;
         my $type = $res->headers->content_type;
-        my $original = $job->original_uri;
+        my $original = $job->original_url;
         
         if ($type && $type =~ qr{text/(html|xml)}) {
-            my $encode = WWW::Crawler::Mojo::guess_encoding($res) || 'UTF-8';
+            my $encode = guess_encoding($res) || 'UTF-8';
             my $cont = Mojo::DOM->new(Encode::decode($encode, $res->body));
-            my $base = $uri;
+            my $base = $url;
             
             if (my $base_tag = $cont->at('base')) {
                 $base = resolve_href($base, $base_tag->attr('href'));
@@ -93,8 +94,8 @@ sub init {
             $cont = $cont->to_string;
             $self->save($original, $cont, $encode);
         } elsif ($type && $type =~ qr{text/css}) {
-            my $encode = WWW::Crawler::Mojo::guess_encoding($res) || 'UTF-8';
-            my $cont = $self->flatten_css($res->body, $uri);
+            my $encode = guess_encoding($res) || 'UTF-8';
+            my $cont = $self->flatten_css($res->body, $url);
             $self->save($original, $cont, $encode);
         } else {
             $self->save($original, $res->body);
@@ -107,7 +108,7 @@ sub init {
     $self->on(error => sub {
         my ($self, $msg, $job) = @_;
         say $msg;
-        my $md5 = md5_sum($job->resolved_uri->to_string);
+        my $md5 = md5_sum($job->url->to_string);
         if (++$self->retrys->{$md5} < $self->max_retry) {
             $self->requeue($job);
             say "Re-scheduled";
@@ -118,9 +119,9 @@ sub init {
 }
 
 sub get_href {
-    my ($self, $base, $uri) = @_;
-    my $fragment = ($uri =~ qr{(#.+)})[0] || '';
-    my $abs = WWW::Crawler::Mojo::resolve_href($base, $uri);
+    my ($self, $base, $url) = @_;
+    my $fragment = ($url =~ qr{(#.+)})[0] || '';
+    my $abs = resolve_href($base, $url);
     if (my $cb = $self->normalize) {
         $abs = $cb->($abs);
     }
@@ -185,15 +186,15 @@ sub save {
 }
 
 sub _regist_asset_name {
-    my ($self, $uri) = @_;
-    if (!$self->filenames->{$uri}) {
-        $self->filenames->{$uri} = $self->asset_name->($uri);
-        my $ext = ($uri->path =~ qr{\.(\w+)$})[0] || do {
-            my $got = $self->ua->head($uri)->res->headers->content_type || '';
+    my ($self, $url) = @_;
+    if (!$self->filenames->{$url}) {
+        $self->filenames->{$url} = $self->asset_name->($url);
+        my $ext = ($url->path =~ qr{\.(\w+)$})[0] || do {
+            my $got = $self->ua->head($url)->res->headers->content_type || '';
             $got =~ s/\;.*$//;
             $self->types->{lc $got};
         };
-        $self->filenames->{$uri} .= ".$ext" if ($ext);
+        $self->filenames->{$url} .= ".$ext" if ($ext);
     }
 }
 
