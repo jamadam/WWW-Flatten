@@ -16,7 +16,7 @@ has 'basedir';
 has is_target => sub { sub { 1 } };
 has 'normalize';
 has asset_name => sub { asset_number_generator(6) };
-has retrys => sub { {} };
+has _retrys => sub { {} };
 has max_retry => 3;
 has types => sub {
     my $types;
@@ -109,7 +109,7 @@ sub init {
         my ($self, $msg, $job) = @_;
         say $msg;
         my $md5 = md5_sum($job->url->to_string);
-        if (++$self->retrys->{$md5} < $self->max_retry) {
+        if (++$self->_retrys->{$md5} < $self->max_retry) {
             $self->requeue($job);
             say "Re-scheduled";
         }
@@ -141,15 +141,13 @@ sub flatten_html {
         }
     });
     
-    $dom->find('meta[http\-equiv=Refresh]')->each(sub {
-        my $dom = shift;
-        if (my $href = $dom->{content} && ($dom->{content} =~ qr{URL=(.+)}i)[0]) {
-            my $abs = $self->get_href($base, $1);
-            $dom->{content} =~ s{URL=(.+)}{
-                'URL='. $abs;
-            }e;
+    $dom->find('meta[content]')->each(sub {
+        if ($_[0] =~ qr{http\-equiv="?Refresh"?}i && $_[0]->{content}) {
+            $_[0]->{content} =~
+                            s{URL=(.+)}{ 'URL='. $self->get_href($base, $1) }e;
         }
     });
+
     
     $dom->find('base')->each(sub {shift->remove});
     
@@ -254,7 +252,103 @@ This software is considered to be alpha quality and isn't recommended for regula
 
 =head1 ATTRIBUTES
 
+=head2 depth
+
+Depth limitation. Defaults to 10.
+
+    $ua->depth(10);
+
+=head2 filenames
+
+URL-Filename mapping table. This well automatically be increased during crawling
+but you can pre-define some beforehand.
+
+    $bot->finenames({
+        'http://example.com/index.html' => 'index.html',
+        'http://example.com/index2.html' => 'index2.html',
+    })
+
+=head2 basedir
+
+A directory path for output files.
+
+    $bot->basedir('./out');
+
+=head2 is_target
+
+Set the condition which indecates whether the job is flatten target or not.
+
+    $bot->is_target(sub {
+        my ($job, $context) = @_;
+        ...
+        return 1 # or 0
+    });
+
+=head2 'normalize'
+
+A code reference which perform normalization for URLs. The callback will take
+L<Mojo::URL> instance.
+
+    $bot->normalize(sub {
+        my $url = shift;
+        my $modified = ...;
+        return $modified;
+    });
+
+=head2 asset_name
+
+A code reference that generates asset names. Defaults to a preset generator
+asset_number_generator, which generates 6 digit number. There provides
+another option asset_hash_generator, which generates 6 character hash.
+
+    $bot->asset_name(WWW::Flatten::asset_hash_generator(6));
+
+=head2 max_retry
+
+Max attempt limit of retry in case the server in inresponsible. Defaults to 3.
+
+=head2 types
+
+MIME types. Defaults to Mojolicious::Types.
+
 =head1 METHODS
+
+=head2 asset_number_generator
+
+Numeric file name generating closure with self containing storage. See also
+L<asset_name> attribute.
+
+    $bot->asset_name(WWW::Flatten::asset_number_generator(3));
+
+=head2 asset_hash_generator
+
+Hash-based file name generating closure with self containing storage. See also
+L<asset_name> attribute. This function automatically avoid name collision by
+extending the given length.
+
+If you want the names as short as possible, use the following setting.
+
+    $bot->asset_name(WWW::Flatten::asset_hash_generator(1));
+
+=head2 init
+
+Initialize the crawler
+
+=head2 get_href
+
+Generate new href with old one.
+
+=head2 flatten_html
+
+Replace URLs in a Mojo::DOM instance, according to filenames attribute.
+
+=head2 flatten_css
+
+Replace URLs in a CSS string, according to filenames attribute.
+
+=head2 save
+
+Save HTTP response into a file.
 
 =head1 AUTHOR
 
