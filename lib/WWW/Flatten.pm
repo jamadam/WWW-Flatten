@@ -5,10 +5,10 @@ use utf8;
 use 5.010;
 use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
-use WWW::Crawler::Mojo::ScraperUtil qw{resolve_href guess_encoding};
+use WWW::Crawler::Mojo::ScraperUtil qw{html_handlers resolve_href guess_encoding};
 use Mojolicious::Types;
 use Encode;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 has depth => 10;
 has filenames => sub { {} };
@@ -20,7 +20,7 @@ has retrys => sub { {} };
 has max_retry => 3;
 has types => sub {
     my $types;
-    my %cat = %{Mojolicious::Types->new->types};
+    my %cat = %{Mojolicious::Types->new->mapping};
     while (my ($key, $val) = each %cat) {
         $types->{$_} = $key for (map { s/\;.*$//; lc $_ } @$val);
     }
@@ -133,7 +133,8 @@ sub get_href {
 sub flatten_html {
     my ($self, $dom, $base) = @_;
     
-    $dom->find(join(',', keys %{$self->element_handlers}))->each(sub {
+    state $handlers = html_handlers();
+    $dom->find(join(',', keys %{$handlers}))->each(sub {
         my $dom = shift;
         for ('href', 'ping','src','data') {
             $dom->{$_} = $self->get_href($base, $dom->{$_}) if ($dom->{$_});
@@ -224,7 +225,7 @@ WWW::Flatten - Flatten a web pages deeply and make it portable
             'https://github.com' => 'index.html',
         },
         is_target => sub {
-            my $uri = shift->resolved_uri;
+            my $uri = shift->url;
             
             if ($uri =~ qr{\.(css|png|gif|jpeg|jpg|pdf|js|json)$}i) {
                 return 1;

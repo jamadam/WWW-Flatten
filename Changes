@@ -1,6 +1,10 @@
 Revision history for WWW-Flatten
 
-0.03 2014/11/06
+0.04 2014/03/02
+  - Update for new framework apis.
+
+0.03 2015/02/20
+  - Fixed some miner bugs.
 
 0.02 2014/11/06
   - Fixed that charater entity referenes in HTML have caused character breakage.

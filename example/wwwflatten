@@ -73,16 +73,16 @@ say $end_time - $start_time. ' has spent';
 
 sub target_single {
     my ($job, $context) = @_;
-    return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
+    return ((ref $context) ne 'Mojo::DOM' || $context->tag !~ qr{^(form|a)$});
 }
 
 sub target_path {
     my ($job, $context) = @_;
-    my $uri = $job->resolved_uri;
+    my $uri = $job->url;
     state $ihost = $start->ihost;
     state $path = $start->path;
     return 1 if ($uri->ihost eq $ihost) && $uri->path =~ qr{^$path};
-    return ((ref $context) ne 'Mojo::DOM' || $context->type !~ qr{^(form|a)$});
+    return ((ref $context) ne 'Mojo::DOM' || $context->tag !~ qr{^(form|a)$});
 }
 
 sub gen_mojo_app {
