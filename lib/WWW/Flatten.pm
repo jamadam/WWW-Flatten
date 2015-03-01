@@ -8,7 +8,7 @@ use Mojo::Util qw(md5_sum);
 use WWW::Crawler::Mojo::ScraperUtil qw{html_handlers resolve_href guess_encoding};
 use Mojolicious::Types;
 use Encode;
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 has depth => 10;
 has filenames => sub { {} };
