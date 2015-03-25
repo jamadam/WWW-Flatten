@@ -60,22 +60,20 @@ sub init {
         
         return unless $res->code == 200;
         
-        $scrape->(sub {
-            my ($self, $enqueue, $job, $context) = @_;
+        for my $job2 ($scrape->()) {
             
-            return unless ($self->is_target->($job, $context));
-            return unless ($job->depth <= $self->depth);
+            next unless ($self->is_target->($job2, $job2->context));
+            next unless ($job2->depth <= $self->depth);
             
-            my $url = $job->url;
+            my $url = $job2->url;
             
             if (my $cb = $self->normalize) {
-                $job->url($url = $cb->($url));
+                $job2->url($url = $cb->($url));
             }
             
             $self->_regist_asset_name($url);
-            
-            $enqueue->();
-        });
+            $self->enqueue($job2);
+        }
         
         my $url = $job->url;
         my $type = $res->headers->content_type;
