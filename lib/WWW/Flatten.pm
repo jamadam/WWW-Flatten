@@ -21,8 +21,8 @@ has max_retry => 3;
 has types => sub {
     my $types;
     my %cat = %{Mojolicious::Types->new->mapping};
-    while (my ($key, $val) = each %cat) {
-        $types->{$_} = $key for (map { s/\;.*$//; lc $_ } @$val);
+    for my $key (sort keys %cat) {
+        $types->{$_} = $key for (map { s/\;.*$//; lc $_ } @{$cat{$key}});
     }
     return $types;
 };
