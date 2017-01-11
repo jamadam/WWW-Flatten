@@ -186,11 +186,11 @@ sub _regist_asset_name {
     my ($self, $url) = @_;
     if (!$self->filenames->{$url}) {
         $self->filenames->{$url} = $self->asset_name->($url);
-        my $ext = ($url->path =~ qr{\.(\w+)$})[0] || do {
+        my $ext = do {
             my $got = $self->ua->head($url)->res->headers->content_type || '';
             $got =~ s/\;.*$//;
             $self->types->{lc $got};
-        };
+        } || ($url->path =~ qr{\.(\w+)$})[0];
         $self->filenames->{$url} .= ".$ext" if ($ext);
     }
 }
