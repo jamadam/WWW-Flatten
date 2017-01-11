@@ -53,6 +53,11 @@ sub init {
     
     for (keys %{$self->filenames}) {
         $self->enqueue($_);
+        if (!ref $_) {
+            my $val = $self->filenames->{$_};
+            delete $self->filenames->{$_};
+            $self->filenames->{Mojo::URL->new($_)} = $val;
+        }
     }
     
     $self->on(res => sub {
