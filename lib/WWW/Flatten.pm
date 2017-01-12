@@ -98,6 +98,7 @@ sub init {
         my $url = $job->url;
         my $type = $res->headers->content_type;
         my $original = $job->original_url;
+        my $save_file = $self->filenames->{$original};
         
         if ($type && $type =~ qr{^(text|application)/(html|xml|xhtml)}) {
             my $encode = guess_encoding($res) || 'UTF-8';
@@ -108,19 +109,18 @@ sub init {
                 $base = resolve_href($base, $base_tag->attr('href'));
             }
             
-            $self->flatten_html($cont, $base);
+            $self->flatten_html($cont, $base, $save_file);
             $cont = $cont->to_string;
             $self->save($original, $cont, $encode);
         } elsif ($type && $type =~ qr{text/css}) {
             my $encode = guess_encoding($res) || 'UTF-8';
-            my $cont = $self->flatten_css($res->body, $url);
+            my $cont = $self->flatten_css($res->body, $url, $save_file);
             $self->save($original, $cont, $encode);
         } else {
             $self->save($original, $res->body);
         }
         
-        say sprintf('created: %s => %s ',
-                                    $self->filenames->{$original}, $original);
+        say sprintf('created: %s => %s ', $save_file, $original);
     });
     
     $self->on(error => sub {
@@ -137,32 +137,33 @@ sub init {
 }
 
 sub get_href {
-    my ($self, $base, $url) = @_;
+    my ($self, $base, $url, $ref_path) = @_;
     my $fragment = ($url =~ qr{(#.+)})[0] || '';
     my $abs = resolve_href($base, $url);
     if (my $cb = $self->normalize) {
         $abs = $cb->($abs);
     }
     my $file = $self->filenames->{$abs};
-    return './'. $file. $fragment if ($file);
+    my $refdir = Mojo::File->new($ref_path || '')->dirname;
+    return (Mojo::File->new($file)->to_rel($refdir)). $fragment if ($file);
     return $abs. $fragment;
 }
 
 sub flatten_html {
-    my ($self, $dom, $base) = @_;
+    my ($self, $dom, $base, $ref_path) = @_;
     
     state $handlers = html_handlers();
     $dom->find(join(',', keys %{$handlers}))->each(sub {
         my $dom = shift;
         for ('href', 'ping','src','data') {
-            $dom->{$_} = $self->get_href($base, $dom->{$_}) if ($dom->{$_});
+            $dom->{$_} = $self->get_href($base, $dom->{$_}, $ref_path) if ($dom->{$_});
         }
     });
     
     $dom->find('meta[content]')->each(sub {
         if ($_[0] =~ qr{http\-equiv="?Refresh"?}i && $_[0]->{content}) {
             $_[0]->{content} =~
-                            s{URL=(.+)}{ 'URL='. $self->get_href($base, $1) }e;
+                            s{URL=(.+)}{ 'URL='. $self->get_href($base, $1, $ref_path) }e;
         }
     });
 
@@ -172,23 +173,23 @@ sub flatten_html {
     $dom->find('style')->each(sub {
         my $dom = shift;
         my $cont = $dom->content;
-        $dom->content($self->flatten_css($cont, $base));
+        $dom->content($self->flatten_css($cont, $base, $ref_path));
     });
     
     $dom->find('[style]')->each(sub {
         my $dom = shift;
         my $cont = $dom->{style};
-        $dom->{style} = $self->flatten_css($dom->{style}, $base);
+        $dom->{style} = $self->flatten_css($dom->{style}, $base, $ref_path);
     });
     return $dom
 }
 
 sub flatten_css {
-    my ($self, $cont, $base) = @_;
+    my ($self, $cont, $base, $ref_path) = @_;
     $cont =~ s{url\((.+?)\)}{
         my $url = $1;
         $url =~ s/^(['"])// && $url =~ s/$1$//;
-        'url('. $self->get_href($base, $url). ')';
+        'url('. $self->get_href($base, $url, $ref_path). ')';
     }egi;
     return $cont;
 }

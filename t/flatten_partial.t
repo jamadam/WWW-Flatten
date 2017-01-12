@@ -65,36 +65,36 @@ $flattener->filenames({
     'http://example.com/redirected2'    => '015',
 });
 
-is $flattener->flatten_html($in, 'http://example1.com/'), <<'EOF', 'right content';
+is $flattener->flatten_html($in, 'http://example1.com/', 'foo/index'), <<'EOF', 'right content';
 <html>
 <head>
     <meta content="5;URL=http://example.com/no-a-redirection">
-    <meta content="5;URL=./001" http-equiv="Refresh">
-    <meta content="5;URL=./015" http-equiv="refresh">
-    <link href="./002" rel="stylesheet" type="text/css">
-    <link href="./003" rel="stylesheet" type="text/css">
-    <script src="./004" type="text/javascript"></script>
-    <script src="./005" type="text/javascript"></script>
+    <meta content="5;URL=../001" http-equiv="Refresh">
+    <meta content="5;URL=../015" http-equiv="refresh">
+    <link href="../002" rel="stylesheet" type="text/css">
+    <link href="../003" rel="stylesheet" type="text/css">
+    <script src="../004" type="text/javascript"></script>
+    <script src="../005" type="text/javascript"></script>
     <style>
         a {
-            background-image:url(./014);
+            background-image:url(../014);
         }
     </style>
 </head>
 <body>
-<a href="./006">A</a>
-<a href="./007">B</a>
+<a href="../006">A</a>
+<a href="../007">B</a>
 <a href="mailto:a%5C@example.com">C</a>
 <a href="tel:0000">D</a>
 <map id="m_map" name="m_map">
-    <area coords="" href="./008" ping="./009" title="E">
+    <area coords="" href="../008" ping="../009" title="E">
 </map>
 <script>
     var a = "<a href='hoge'>F</a>";
 </script>
 <a href="http://example1.com/escaped?foo=bar&amp;baz=yada">G</a>
-<a href="./011">ommit scheme</a>
-<a href="./012" style="background-image:url(./013);"></a>
+<a href="../011">ommit scheme</a>
+<a href="../012" style="background-image:url(../013);"></a>
 </body>
 </html>
 EOF
@@ -119,12 +119,12 @@ $flattener->filenames({
     'http://example.com/image/f'            => '007',
 });
 
-is $flattener->flatten_css($in, 'http://example.com/'), <<'EOF', 'right content';
-body { background-image:url(./001); }
-div { background-image:url(./002); }
-div { background: #fff url(./003); }
-div { background: #fff url(./004); }
-div { background: #fff url(./005); }
-div { background: #fff url(./006); }
-div { background: #fff url(./007); }
+is $flattener->flatten_css($in, 'http://example.com/', 'foo/index'), <<'EOF', 'right content';
+body { background-image:url(../001); }
+div { background-image:url(../002); }
+div { background: #fff url(../003); }
+div { background: #fff url(../004); }
+div { background: #fff url(../005); }
+div { background: #fff url(../006); }
+div { background: #fff url(../007); }
 EOF
