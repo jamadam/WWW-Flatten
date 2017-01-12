@@ -39,7 +39,7 @@ sub asset_hash_generator {
     my $len = (shift || 6);
     my %uniq;
     return sub {
-        my $md5 = md5_sum(shift);
+        my $md5 = md5_sum(shift->url);
         my $len = $len;
         my $key;
         do { $key = substr($md5, 0, $len++) } while (exists $uniq{$key});
@@ -76,7 +76,7 @@ sub init {
                 $job2->url($url = $cb->($url));
             }
             
-            $self->_regist_asset_name($url);
+            $self->_regist_asset_name($job2);
             $self->enqueue($job2);
         }
         
@@ -188,9 +188,10 @@ sub save {
 }
 
 sub _regist_asset_name {
-    my ($self, $url) = @_;
+    my ($self, $job) = @_;
+    my $url = $job->url;
     if (!$self->filenames->{$url}) {
-        $self->filenames->{$url} = $self->asset_name->($url);
+        $self->filenames->{$url} = $self->asset_name->($job);
         my $ext = do {
             my $got = $self->ua->head($url)->res->headers->content_type || '';
             $got =~ s/\;.*$//;
