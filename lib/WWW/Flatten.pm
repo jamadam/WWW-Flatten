@@ -5,6 +5,7 @@ use utf8;
 use 5.010;
 use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
+use Mojo::File;
 use WWW::Crawler::Mojo::ScraperUtil qw{html_handlers resolve_href guess_encoding};
 use Mojolicious::Types;
 use Encode;
@@ -76,7 +77,22 @@ sub init {
                 $job2->url($url = $cb->($url));
             }
             
-            $self->_regist_asset_name($job2);
+            if (!$self->filenames->{$url}) {
+                my $new_id = $self->asset_name->($job2);
+                my $type = $self->ua->head($url)->res->headers->content_type || '';
+                my $ext = $self->types->{ lc(($type =~ /([^;]+)/)[0]) }
+                                            || ($url->path =~ qr{\.(\w+)$})[0];
+                $new_id .= ".$ext" if $ext;
+                $self->filenames->{$url} = $new_id;
+                
+                if (!$type || $type !~ qr{^(text|application)/(html|xml|xhtml)}) {
+                    if (-f $self->filenames->{$url}) {
+                        warn 'already exists';
+                        next;
+                    }
+                }
+            }
+            
             $self->enqueue($job2);
         }
         
@@ -180,25 +196,10 @@ sub flatten_css {
 
 sub save {
     my ($self, $url, $content, $encode) = @_;
-    my $fullpath = $self->basedir. $self->filenames->{$url};
+    my $path =  Mojo::File->new($self->basedir. $self->filenames->{$url});
+    $path->dirname->make_path unless -d $path->dirname;
     $content = Encode::encode($encode, $content) if $encode;
-    open(my $OUT, '>', $fullpath);
-    print $OUT $content;
-    close($OUT);
-}
-
-sub _regist_asset_name {
-    my ($self, $job) = @_;
-    my $url = $job->url;
-    if (!$self->filenames->{$url}) {
-        $self->filenames->{$url} = $self->asset_name->($job);
-        my $ext = do {
-            my $got = $self->ua->head($url)->res->headers->content_type || '';
-            $got =~ s/\;.*$//;
-            $self->types->{lc $got};
-        } || ($url->path =~ qr{\.(\w+)$})[0];
-        $self->filenames->{$url} .= ".$ext" if ($ext);
-    }
+    $path->spurt($content);
 }
 
 1;
