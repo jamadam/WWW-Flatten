@@ -99,7 +99,7 @@ sub init {
         my $type = $res->headers->content_type;
         my $original = $job->original_url;
         
-        if ($type && $type =~ qr{text/(html|xml)}) {
+        if ($type && $type =~ qr{^(text|application)/(html|xml|xhtml)}) {
             my $encode = guess_encoding($res) || 'UTF-8';
             my $cont = Mojo::DOM->new(Encode::decode($encode, $res->body));
             my $base = $url;
