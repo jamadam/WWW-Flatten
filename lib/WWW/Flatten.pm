@@ -87,7 +87,6 @@ sub init {
                 
                 if (!$type || $type !~ qr{^(text|application)/(html|xml|xhtml)}) {
                     if (-f $self->filenames->{$url}) {
-                        warn 'already exists';
                         next;
                     }
                 }
