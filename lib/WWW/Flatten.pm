@@ -11,6 +11,9 @@ use Mojolicious::Types;
 use Encode;
 our $VERSION = '0.05';
 
+my $html_type_regex = qr{^(text|application)/(html|xml|xhtml)};
+my $css_type_regex = qr{^text/css$};
+
 has depth => 10;
 has filenames => sub { {} };
 has 'basedir';
@@ -85,11 +88,8 @@ sub init {
                 $new_id .= ".$ext" if $ext;
                 $self->filenames->{$url} = $new_id;
                 
-                if (!$type || $type !~ qr{^(text|application)/(html|xml|xhtml)}) {
-                    if (-f $self->filenames->{$url}) {
-                        next;
-                    }
-                }
+                next if (!$type || ($type !~ $html_type_regex && $type !~ $css_type_regex))
+                            && -f $self->basedir. $self->filenames->{$url};
             }
             
             $self->enqueue($job2);
@@ -100,7 +100,7 @@ sub init {
         my $original = $job->original_url;
         my $save_file = $self->filenames->{$original};
         
-        if ($type && $type =~ qr{^(text|application)/(html|xml|xhtml)}) {
+        if ($type && $type =~ $html_type_regex) {
             my $encode = guess_encoding($res) || 'UTF-8';
             my $cont = Mojo::DOM->new(Encode::decode($encode, $res->body));
             my $base = $url;
@@ -112,7 +112,7 @@ sub init {
             $self->flatten_html($cont, $base, $save_file);
             $cont = $cont->to_string;
             $self->save($original, $cont, $encode);
-        } elsif ($type && $type =~ qr{text/css}) {
+        } elsif ($type && $type =~ $css_type_regex) {
             my $encode = guess_encoding($res) || 'UTF-8';
             my $cont = $self->flatten_css($res->body, $url, $save_file);
             $self->save($original, $cont, $encode);
