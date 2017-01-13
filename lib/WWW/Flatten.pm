@@ -8,12 +8,37 @@ use Mojo::Util qw(md5_sum);
 use Mojo::File;
 use Mojo::Log;
 use WWW::Crawler::Mojo::ScraperUtil qw{html_handlers resolve_href guess_encoding};
-use Mojolicious::Types;
 use Encode;
 our $VERSION = '0.05';
 
 my $html_type_regex = qr{^(text|application)/(html|xml|xhtml)};
 my $css_type_regex = qr{^text/css$};
+my $types = {
+    'application/atom+xml'      => 'atom',
+    'application/font-woff'     => 'woff',
+    'application/javascript'    => 'js',
+    'application/json'          => 'json',
+    'application/pdf'           => 'pdf',
+    'application/rss+xml'       => 'rss',
+    'application/x-gzip'        => 'gz',
+    'application/xml'           => 'xml',
+    'application/zip'           => 'zip',
+    'audio/mpeg'                => 'mp3',
+    'audio/ogg'                 => 'ogg',
+    'image/gif'                 => 'gif',
+    'image/jpeg'                => 'jpg',
+    'image/png'                 => 'png',
+    'image/svg+xml'             => 'svg',
+    'image/x-icon'              => 'ico',
+    'text/cache-manifest'       => 'appcache',
+    'text/css'                  => 'css',
+    'text/html'                 => 'html',
+    'text/plain'                => 'txt',
+    'text/xml'                  => 'xml',
+    'video/mp4'                 => 'mp4',
+    'video/ogg'                 => 'ogv',
+    'video/webm'                => 'webm',
+};
 
 has depth => 10;
 has filenames => sub { {} };
@@ -23,14 +48,6 @@ has 'normalize';
 has asset_name => sub { asset_number_generator(6) };
 has _retrys => sub { {} };
 has max_retry => 3;
-has types => sub {
-    my $types;
-    my %cat = %{Mojolicious::Types->new->mapping};
-    for my $key (sort keys %cat) {
-        $types->{$_} = $key for (map { s/\;.*$//; lc $_ } @{$cat{$key}});
-    }
-    return $types;
-};
 has 'log_name';
 has 'log';
 
@@ -89,7 +106,7 @@ sub init {
             if (!$self->filenames->{$url}) {
                 my $new_id = $self->asset_name->($job2);
                 my $type = $self->ua->head($url)->res->headers->content_type || '';
-                my $ext = $self->types->{ lc(($type =~ /([^;]+)/)[0]) }
+                my $ext = $types->{ lc(($type =~ /([^;]+)/)[0]) }
                                             || ($url->path =~ qr{\.(\w+)$})[0];
                 $new_id .= ".$ext" if $ext;
                 $self->filenames->{$url} = $new_id;
@@ -333,10 +350,6 @@ another option asset_hash_generator, which generates 6 character hash.
 =head2 max_retry
 
 Max attempt limit of retry in case the server in inresponsible. Defaults to 3.
-
-=head2 types
-
-MIME types. Defaults to Mojolicious::Types.
 
 =head1 METHODS
 
