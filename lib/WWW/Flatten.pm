@@ -6,6 +6,7 @@ use 5.010;
 use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
 use Mojo::File;
+use Mojo::Log;
 use WWW::Crawler::Mojo::ScraperUtil qw{html_handlers resolve_href guess_encoding};
 use Mojolicious::Types;
 use Encode;
@@ -30,6 +31,8 @@ has types => sub {
     }
     return $types;
 };
+has 'log_name';
+has 'log';
 
 sub asset_number_generator {
     my $digit = (shift || 6);
@@ -54,6 +57,9 @@ sub asset_hash_generator {
 
 sub init {
     my ($self) = @_;
+    
+    $self->log(Mojo::Log->new(
+        path => $self->basedir. $self->log_name)) if $self->log_name;
     
     for (keys %{$self->filenames}) {
         $self->enqueue($_);
@@ -120,7 +126,9 @@ sub init {
             $self->save($original, $res->body);
         }
         
-        say sprintf('created: %s => %s ', $save_file, $original);
+        my $log_line = sprintf('created: %s => %s ', $save_file, $original);
+        say $log_line;
+        $self->log->info($log_line) if $self->log;
     });
     
     $self->on(error => sub {
@@ -200,6 +208,20 @@ sub save {
     $path->dirname->make_path unless -d $path->dirname;
     $content = Encode::encode($encode, $content) if $encode;
     $path->spurt($content);
+}
+
+sub say_start {
+    my $self = shift;
+    
+    my $content = <<"EOF";
+----------------------------------------
+Crawling is starting with @{[ $self->queue->next->url ]}
+Max Connection  : @{[ $self->max_conn ]}
+User Agent      : @{[ $self->ua_name ]}
+----------------------------------------
+EOF
+    say $content;
+    $self->log->append($content) if $self->log;
 }
 
 1;
