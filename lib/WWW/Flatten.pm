@@ -7,7 +7,7 @@ use Mojo::Base 'WWW::Crawler::Mojo';
 use Mojo::Util qw(md5_sum);
 use Mojo::File;
 use Mojo::Log;
-use WWW::Crawler::Mojo::ScraperUtil qw{html_handlers resolve_href guess_encoding};
+use WWW::Crawler::Mojo::ScraperUtil qw{resolve_href guess_encoding};
 use Encode;
 our $VERSION = '0.05';
 
@@ -94,7 +94,7 @@ sub init {
         
         for my $job2 ($scrape->()) {
             
-            next unless ($self->is_target->($job2, $job2->context));
+            next unless ($self->is_target->($job2));
             next unless ($job2->depth <= $self->depth);
             
             my $url = $job2->url;
@@ -178,7 +178,7 @@ sub get_href {
 sub flatten_html {
     my ($self, $dom, $base, $ref_path) = @_;
     
-    state $handlers = html_handlers();
+    state $handlers = $self->html_handlers();
     $dom->find(join(',', keys %{$handlers}))->each(sub {
         my $dom = shift;
         for ('href', 'ping','src','data') {
@@ -324,7 +324,7 @@ A directory path for output files.
 Set the condition which indecates whether the job is flatten target or not.
 
     $bot->is_target(sub {
-        my ($job, $context) = @_;
+        my $job = shift;
         ...
         return 1 # or 0
     });
