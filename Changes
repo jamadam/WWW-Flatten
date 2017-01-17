@@ -1,8 +1,18 @@
 Revision history for WWW-Flatten
 
-0.05 2014/03/02
+0.06 2017/01/17
+  - Fixed a bug where initial URLs mismatch scraped URLs on encoding.
+  - Changed asset name generator argument from URL to job.
+  - Changed hyper link path coding from root-relative to relative.
+  - Improved file extension detection.
+  - Improved HTML-like content-type detection.
+  - Improved crawling rule to reduce requests to already existing asset files.
+  - Added log_name attribute to write crawling logs.
 
-0.04 2014/03/02
+0.05 2015/03/25
+  - Update for new framework apis.
+
+0.04 2015/03/02
   - Update for new framework apis.
 
 0.03 2015/02/20
