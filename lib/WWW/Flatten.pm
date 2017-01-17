@@ -103,17 +103,18 @@ sub init {
                 $job2->url($url = $cb->($url));
             }
             
-            if (!$self->filenames->{$url}) {
-                my $new_id = $self->asset_name->($job2);
-                my $type = $self->ua->head($url)->res->headers->content_type || '';
-                my $ext = $types->{ lc(($type =~ /([^;]+)/)[0]) }
-                                            || ($url->path =~ qr{\.(\w+)$})[0];
-                $new_id .= ".$ext" if $ext;
-                $self->filenames->{$url} = $new_id;
-                
-                next if (!$type || ($type !~ $html_type_regex && $type !~ $css_type_regex))
-                            && -f $self->basedir. $self->filenames->{$url};
-            }
+            next if ($self->filenames->{$url});
+            
+            my $new_id = $self->asset_name->($job2);
+            my $type = $self->ua->head($url)->res->headers->content_type || '';
+            my $ext1 = $types->{ lc(($type =~ /([^;]+)/)[0]) };
+            my $ext2 = ($url->path =~ qr{\.(\w+)$})[0];
+            my $ext = $ext1 || $ext2;
+            $new_id .= ".$ext" if $ext;
+            $self->filenames->{$url} = $new_id;
+            
+            next if $type !~ $html_type_regex && $type !~ $css_type_regex
+                                                && -f $self->basedir. $new_id;
             
             $self->enqueue($job2);
         }
