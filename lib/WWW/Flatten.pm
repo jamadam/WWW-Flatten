@@ -244,12 +244,12 @@ User Agent      : @{[ $self->ua_name ]}
 EOF
     say $content;
 
-    if ($this->log) {
+    if ($self->log) {
         $self->log->append($content);
         say <<EOF;
 This could take a while. You can run the following command on another shell to track the status:
 
-  tail -f @{[ $this->log ]}
+  tail -f @{[ $self->log ]}
 EOF
     }
 }
