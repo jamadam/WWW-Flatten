@@ -144,18 +144,22 @@ sub init {
             $self->save($original, $res->body);
         }
         
-        my $log_line = sprintf('created: %s => %s ', $save_file, $original);
-        say $log_line;
-        $self->log->info($log_line) if $self->log;
+        $self->log->info(
+            sprintf('created: %s => %s ', $save_file, $original)) if $self->log;
     });
     
     $self->on(error => sub {
         my ($self, $msg, $job) = @_;
-        say $msg;
+        
+        $self->log->error("$msg: ". $job->url) if $self->log;
+        
         my $md5 = md5_sum($job->url->to_string);
         if (++$self->_retrys->{$md5} < $self->max_retry) {
             $self->requeue($job);
-            say "Re-scheduled";
+            $self->log->warn("Re-scheduled: ". $job->url) if $self->log;
+        } else {
+            my $times = $self->max_retry;
+            $self->log->error("Failed $times times: ". $job->url) if $self->log;
         }
     });
     
@@ -239,7 +243,15 @@ User Agent      : @{[ $self->ua_name ]}
 ----------------------------------------
 EOF
     say $content;
-    $self->log->append($content) if $self->log;
+
+    if ($this->log) {
+        $self->log->append($content);
+        say <<EOF;
+This could take a while. You can run the following command on another shell to track the status:
+
+  tail -f @{[ $this->log ]}
+EOF
+    }
 }
 
 1;
