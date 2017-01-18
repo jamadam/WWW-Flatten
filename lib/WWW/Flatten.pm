@@ -107,7 +107,7 @@ sub init {
             
             my $new_id = $self->asset_name->($job2);
             my $type = $self->ua->head($url)->res->headers->content_type || '';
-            my $ext1 = $types->{ lc(($type =~ /([^;]+)/)[0]) };
+            my $ext1 = $types->{ lc(($type =~ /([^;]*)/)[0]) };
             my $ext2 = ($url->path =~ qr{\.(\w+)$})[0];
             my $ext = $ext1 || $ext2;
             $new_id .= ".$ext" if $ext;
