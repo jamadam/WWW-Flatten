@@ -9,7 +9,7 @@ use Mojo::File;
 use Mojo::Log;
 use WWW::Crawler::Mojo::ScraperUtil qw{resolve_href guess_encoding};
 use Encode;
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 my $html_type_regex = qr{^(text|application)/(html|xml|xhtml)};
 my $css_type_regex = qr{^text/css$};
