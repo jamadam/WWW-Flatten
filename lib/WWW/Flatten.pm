@@ -89,6 +89,8 @@ sub init {
     
     $self->on(res => sub {
         my ($self, $scrape, $job, $res) = @_;
+
+        $self->say_progress;
         
         return unless $res->code == 200;
         
@@ -255,6 +257,13 @@ This could take a while. You can run the following command on another shell to t
   tail -f $path
 EOF
     }
+}
+
+sub say_progress {
+    local $| = 1;
+    my $self = shift;
+    my $len = $self->queue->length;
+    print sprintf('%s jobs left', $len), ' ' x 30, "\r";
 }
 
 1;
