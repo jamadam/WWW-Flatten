@@ -246,10 +246,13 @@ EOF
 
     if ($self->log) {
         $self->log->append($content);
+        
+        my $path =  Mojo::File->new($self->log->path)->to_abs;
+        
         say <<EOF;
 This could take a while. You can run the following command on another shell to track the status:
 
-  tail -f @{[ $self->log ]}
+  tail -f $path
 EOF
     }
 }
