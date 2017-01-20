@@ -176,9 +176,11 @@ sub get_href {
         $abs = $cb->($abs);
     }
     my $file = $self->filenames->{$abs};
-    my $refdir = Mojo::File->new($ref_path || '')->dirname;
-    return (Mojo::File->new($file)->to_rel($refdir)). $fragment if ($file);
-    return $abs. $fragment;
+    return $abs. $fragment unless $file;
+    my $path = Mojo::File->new($file)->to_rel(
+                                Mojo::File->new($ref_path || '')->dirname);
+    $path =~ s{\\}{/}g if $^O eq 'MSWin32';
+    return $path. $fragment if ($file);
 }
 
 sub flatten_html {
