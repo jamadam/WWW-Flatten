@@ -72,7 +72,8 @@ my $end_time = time();
 say $end_time - $start_time. ' has spent';
 
 sub target_single {
-    my ($job, $context) = @_;
+    my ($job) = @_;
+    my $context = $job->context;
     return ((ref $context) ne 'Mojo::DOM' || $context->tag !~ qr{^(form|a)$});
 }
 
