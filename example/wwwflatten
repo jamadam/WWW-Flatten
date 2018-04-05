@@ -53,7 +53,8 @@ GetOptionsFromArray(\@ARGV, \%options,
 
 my $start = Mojo::URL->new(pop @ARGV);
 $bot->filenames->{$start} = 'index.html';
-$bot->is_target(\&target_single) unless (!$bot->is_target);
+
+$bot->is_target(\&target_single) if !$bot->is_target;
 
 if ($options{'mojo-app'}) {
     my $app_base = $bot->basedir;
@@ -83,7 +84,7 @@ sub target_path {
     state $ihost = $start->ihost;
     state $path = $start->path;
     return 1 if ($uri->ihost eq $ihost) && $uri->path =~ qr{^$path};
-    return ((ref $context) ne 'Mojo::DOM' || $context->tag !~ qr{^(form|a)$});
+    return ((ref $context) ne 'Mojo::DOM');
 }
 
 sub gen_mojo_app {
