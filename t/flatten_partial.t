@@ -43,6 +43,7 @@ $in = Mojo::DOM->new(<<'EOF');
 <a href="escaped?foo=bar&amp;baz=yada">G</a>
 <a href="//example.com">ommit scheme</a>
 <a href="http://doublehit.com/" style="background-image:url(http://example.com/bgimg2.png);"></a>
+<span id="char-reference">&#8547;</span>
 </body>
 </html>
 EOF
@@ -95,6 +96,7 @@ is $flattener->flatten_html($in, 'http://example1.com/', 'foo/index'), <<'EOF', 
 <a href="http://example1.com/escaped?foo=bar&amp;baz=yada">G</a>
 <a href="../011">ommit scheme</a>
 <a href="../012" style="background-image:url(../013);"></a>
+<span id="char-reference">Ⅳ</span>
 </body>
 </html>
 EOF
@@ -128,3 +130,5 @@ div { background: #fff url(../005); }
 div { background: #fff url(../006); }
 div { background: #fff url(../007); }
 EOF
+
+warn 
