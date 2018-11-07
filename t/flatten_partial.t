@@ -130,5 +130,3 @@ div { background: #fff url(../005); }
 div { background: #fff url(../006); }
 div { background: #fff url(../007); }
 EOF
-
-warn 
