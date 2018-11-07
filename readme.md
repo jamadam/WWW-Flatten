@@ -48,11 +48,13 @@ See also [WWW::Flatten] API
 ## REPOSITORY
 
 [https://github.com/jamadam/WWW-Flatten]
+
 [https://github.com/jamadam/WWW-Flatten]:https://github.com/jamadam/WWW-Flatten
 
 ## SEE ALSO
 
 [https://github.com/jamadam/WWW-Crawler-Mojo]
+
 [https://github.com/jamadam/WWW-Crawler-Mojo]:https://github.com/jamadam/WWW-Crawler-Mojo
 
 ## COPYRIGHT AND LICENSE
